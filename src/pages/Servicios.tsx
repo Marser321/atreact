@@ -1,237 +1,175 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Link } from 'react-router-dom';
+import { ArrowRight, Building2, ChevronRight, FileCheck2, FileText, RefreshCcw, X } from 'lucide-react';
+import { EditorialHero } from '../components/EditorialHero';
+import { GlassCard } from '../components/GlassCard';
 import { services } from '../data/seed';
 import type { Service } from '../data/seed';
-import { GlassCard } from '../components/GlassCard';
-import { PremiumPageHero } from '../components/PremiumPageHero';
-import { CtaBand } from '../components/CtaBand';
-import { FileText, ArrowRight, X, ChevronRight } from 'lucide-react';
+import webDocumentSuite from '../assets/backgrounds/web-document-suite.webp';
 
-// Import background WebP scenes
-import webCatalogScene from '../assets/backgrounds/web-catalog-scene.webp';
-import webConversionScene from '../assets/backgrounds/web-conversion-scene.webp';
+type ServiceCategory = Service['category'] | 'todos';
+
+const categoryOptions: { value: ServiceCategory; label: string; icon: React.ReactNode }[] = [
+  { value: 'todos', label: 'Todos', icon: <FileCheck2 /> },
+  { value: 'migratorios', label: 'Migratorios', icon: <FileText /> },
+  { value: 'renovaciones', label: 'Permisos y renovaciones', icon: <RefreshCcw /> },
+  { value: 'negocios', label: 'Negocios', icon: <Building2 /> },
+];
 
 export function Servicios() {
+  const [category, setCategory] = useState<ServiceCategory>('todos');
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  const serviceTracks = [
-    {
-      title: "Trámites migratorios",
-      body: "Casos donde el mayor valor está en reunir soportes, identificar vacíos y ordenar la carpeta antes de avanzar.",
-    },
-    {
-      title: "Permisos y renovaciones",
-      body: "Procesos que necesitan atención a fechas, documentos previos, recibos y consistencia administrativa.",
-    },
-    {
-      title: "Gestión empresarial inicial",
-      body: "Escenarios donde conviene ordenar datos del negocio, responsables y documentos base desde el comienzo.",
-    },
-  ];
+  const filteredServices = category === 'todos' ? services : services.filter((service) => service.category === category);
 
-  const serviceBenefits = [
-    "Menos tiempo reconstruyendo documentos dispersos.",
-    "Más claridad sobre qué llevar a una orientación inicial.",
-    "Un recorrido visual que ayuda a comparar trámites sin perderse.",
-  ];
+  useEffect(() => {
+    if (!selectedService) return;
+    previouslyFocusedRef.current = document.activeElement as HTMLElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
 
-  const processFlow = [
-    {
-      step: "01",
-      title: "Revise el tipo de trámite",
-      body: "Cada bloque presenta una puerta de entrada distinta según el momento del caso.",
-    },
-    {
-      step: "02",
-      title: "Identifique qué documentos suelen aparecer",
-      body: "Las tarjetas y páginas detalle agrupan soportes frecuentes para bajar la incertidumbre inicial.",
-    },
-    {
-      step: "03",
-      title: "Pase a orientación solo cuando ya tenga contexto",
-      body: "El objetivo es que la acción final se sienta lógica, no apurada.",
-    },
-  ];
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedService(null);
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+      const elements = dialogRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocusedRef.current?.focus();
+    };
+  }, [selectedService]);
 
   return (
     <>
-      <PremiumPageHero
-        eyebrow="Servicios"
-        title="Elija el trámite que necesita ordenar"
-        description="Revise el servicio que mejor se ajusta a su caso, entienda qué puede preparar y avance con una orientación inicial más enfocada."
-        intent="catalog"
-      />
+      <EditorialHero
+        eyebrow="Selector de trámites"
+        title="Encuentre qué necesita ordenar antes de avanzar"
+        description="Compare tipos de apoyo administrativo, revise documentos comunes y llegue a la conversación inicial con mejor contexto."
+        image={webDocumentSuite}
+        accent="red"
+      >
+        <a href="#selector" className="rounded-xl bg-[#BE0000] px-6 py-3 font-bold text-white hover:bg-[#990000]">Usar selector</a>
+        <Link to="/contacto?ruta=tramites" className="rounded-xl border border-white/25 bg-white/10 px-6 py-3 font-bold text-white hover:bg-white/15">Consultar mi caso</Link>
+      </EditorialHero>
 
-      {/* MAPA DE NECESIDADES */}
-      <section className="relative z-20 bg-[#050B14] px-6 py-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-3">Tres tipos de recorrido para ordenar mejor su caso</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">En vez de mostrar una lista plana, organizamos los servicios como familias de necesidades para que la navegación tenga más sentido desde el principio.</p>
-          </div>
+      <section id="selector" className="relative z-20 mx-auto max-w-7xl px-6 py-16 scroll-mt-28">
+        <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr]">
+          <aside>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-red-300">Paso 1</p>
+            <h2 className="mt-3 text-4xl font-black text-white">Elija una familia</h2>
+            <p className="mt-4 leading-relaxed text-on-dark-muted">Filtre por el tipo de necesidad. Luego abra un trámite para revisar alcance y documentos frecuentes.</p>
+            <div className="mt-7 grid gap-3">
+              {categoryOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setCategory(option.value)}
+                  aria-pressed={category === option.value}
+                  className={`flex items-center gap-3 rounded-xl border p-4 text-left font-bold transition ${category === option.value ? 'border-red-300/50 bg-red-400/12 text-white' : 'border-white/10 bg-white/[0.035] text-slate-300 hover:bg-white/[0.07]'}`}
+                >
+                  <span className="h-5 w-5">{option.icon}</span>
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </aside>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {serviceTracks.map((track, index) => (
-              <GlassCard key={index} glowColor="rgba(59, 130, 246, 0.1)" className="p-8">
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">Ruta 0{index + 1}</p>
-                <h3 className="text-xl font-bold text-white mb-3">{track.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{track.body}</p>
-              </GlassCard>
-            ))}
+          <div>
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-300">Paso 2</p>
+                <h2 className="mt-2 text-3xl font-black text-white">Revise sus opciones</h2>
+              </div>
+              <span className="text-sm text-on-dark-muted">
+                {filteredServices.length} {filteredServices.length === 1 ? 'opción' : 'opciones'}
+              </span>
+            </div>
+            <div className="mt-7 grid gap-5 md:grid-cols-2">
+              {filteredServices.map((service) => (
+                <button key={service.slug} type="button" onClick={() => setSelectedService(service)} aria-haspopup="dialog" className="rounded-[2rem] text-left">
+                  <GlassCard variant="editorial" className="flex h-full flex-col justify-between p-7 hover:scale-[1.01]" glowColor="rgba(190,0,0,0.14)">
+                    <div>
+                      <span className="text-xs font-black uppercase tracking-[0.16em] text-red-300">{service.category}</span>
+                      <h3 className="mt-4 text-2xl font-bold text-white">{service.title}</h3>
+                      <p className="mt-4 text-sm leading-relaxed text-on-dark-muted">{service.summary}</p>
+                    </div>
+                    <span className="mt-7 inline-flex items-center font-bold text-blue-300">Ver alcance y documentos <ChevronRight className="ml-1 h-4 w-4" /></span>
+                  </GlassCard>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* SERVICES GRID */}
-      <section className="w-full relative py-24 overflow-hidden z-20 border-b border-white/5">
-        {/* Background WebP */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.12] mix-blend-overlay"
-            style={{ backgroundImage: `url(${webCatalogScene})` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#050B14] via-transparent to-[#050B14]" />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">Servicios Disponibles</h2>
-            <p className="text-slate-400">Cada tarjeta está pensada para decidir, no solo para listar. Haz clic en una para ver detalles.</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((service, index) => (
-              <div
-                key={index}
-                onClick={() => setSelectedService(service)}
-                className="cursor-pointer"
-              >
-                <GlassCard className="p-6 h-full flex flex-col justify-between hover:scale-[1.02] active:scale-[0.98]" glowColor="rgba(190,0,0,0.1)">
-                  <div>
-                    <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center mb-4 border border-white/10 text-red-500">
-                      <FileText size={20} />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-3">{service.title}</h3>
-                    <p className="text-slate-400 text-sm leading-relaxed mb-6 line-clamp-3">{service.summary}</p>
-                  </div>
-                  <span className="inline-flex items-center text-xs font-bold text-blue-400 uppercase tracking-wider">
-                    Ver Requisitos <ChevronRight size={14} className="ml-1" />
-                  </span>
-                </GlassCard>
+      <section className="relative z-20 border-y border-white/10 bg-[#08111e] px-6 py-16">
+        <div className="mx-auto max-w-7xl">
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-300">Antes de contactar</p>
+          <h2 className="mt-3 max-w-3xl text-4xl font-black text-white">Prepare una conversación más útil</h2>
+          <div className="mt-9 grid gap-5 md:grid-cols-3">
+            {[
+              ['01', 'Identifique el trámite', 'Anote qué proceso desea ordenar y qué fecha importa.'],
+              ['02', 'Reúna lo disponible', 'Separe identidad, recibos, formularios y evidencias.'],
+              ['03', 'Detecte complejidad', 'Si existe corte, detención, deportación o antecedentes, indíquelo desde el inicio.'],
+            ].map(([step, title, body]) => (
+              <div key={step} className="rounded-2xl border border-white/10 bg-white/[0.035] p-6">
+                <span className="font-black text-red-300">{step}</span>
+                <h3 className="mt-4 text-xl font-bold text-white">{title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-on-dark-muted">{body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* METODOLOGIA / BENEFICIOS */}
-      <section className="relative z-20 max-w-7xl mx-auto px-6 py-20">
-        <div className="grid md:grid-cols-2 gap-8">
-          <GlassCard className="p-8 md:p-10" glowColor="rgba(255,255,255,0.02)">
-            <h3 className="text-2xl md:text-4xl font-extrabold text-white mb-4">Qué mejora con este enfoque</h3>
-            <p className="text-slate-400 mb-8">Cuando entiende mejor su trámite, resulta más fácil reunir soportes, detectar faltantes y aprovechar la orientación inicial.</p>
-            <ul className="space-y-4">
-              {serviceBenefits.map((benefit, idx) => (
-                <li key={idx} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                  <span className="text-slate-300 text-sm md:text-base">{benefit}</span>
-                </li>
-              ))}
-            </ul>
-          </GlassCard>
-
-          <div className="grid gap-4">
-            {processFlow.map((item, index) => (
-              <GlassCard key={index} className="p-6" glowColor="rgba(59, 130, 246, 0.05)">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue-400">{item.step}</span>
-                  <h4 className="text-lg font-bold text-white">{item.title}</h4>
-                </div>
-                <p className="text-slate-400 text-sm leading-relaxed">{item.body}</p>
-              </GlassCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA BAND */}
-      <section className="w-full relative py-12 overflow-hidden z-20">
-        {/* Background WebP */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.15] mix-blend-overlay"
-            style={{ backgroundImage: `url(${webConversionScene})` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#050B14] via-transparent to-[#050B14]" />
-        </div>
-        <CtaBand
-          eyebrow="Orientación"
-          title="Si ya reconoce su tipo de trámite, demos el siguiente paso"
-          description="Podemos indicarle cómo empezar a ordenar sus documentos y qué información conviene llevar a la primera conversación."
-          ctaLabel="Solicitar orientación"
-          ctaHref="/contacto"
-        />
-      </section>
-
-      {/* DETAIL MODAL WITH FRAMER MOTION */}
       <AnimatePresence>
         {selectedService && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="service-dialog-title"
+              aria-describedby="service-dialog-description"
+              initial={{ opacity: 0, scale: 0.96, y: 18 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/20 bg-[#050B14] p-8 md:p-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)]"
+              exit={{ opacity: 0, scale: 0.96, y: 18 }}
+              className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-white/20 bg-[var(--color-surface-dark-elevated)] p-8 shadow-2xl md:p-10"
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedService(null)}
-                className="absolute top-6 right-6 p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white transition-all"
-              >
-                <X size={18} />
-              </button>
-
-              <h3 className="text-3xl font-extrabold text-white mb-2">{selectedService.title}</h3>
-              <p className="text-blue-400 text-sm font-semibold uppercase tracking-wider mb-6">{selectedService.seoTitle}</p>
-
-              <p className="text-slate-300 mb-6 leading-relaxed">{selectedService.summary}</p>
-
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <button ref={closeButtonRef} type="button" onClick={() => setSelectedService(null)} aria-label="Cerrar detalles del servicio" className="absolute right-6 top-6 rounded-full border border-white/15 bg-white/5 p-2 text-slate-300 hover:bg-white/10 hover:text-white"><X /></button>
+              <p className="text-sm font-black uppercase tracking-[0.16em] text-red-300">{selectedService.category}</p>
+              <h2 id="service-dialog-title" className="mt-3 pr-12 text-3xl font-black text-white">{selectedService.title}</h2>
+              <p id="service-dialog-description" className="mt-4 leading-relaxed text-on-dark-muted">{selectedService.summary}</p>
+              <div className="mt-8 grid gap-7 md:grid-cols-2">
                 <div>
-                  <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Detalle del servicio</h4>
-                  <ul className="space-y-2 text-slate-400 text-xs">
-                    {selectedService.details.map((detail, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5"></div>
-                        <span>{detail}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <h3 className="font-bold text-white">Qué podemos ordenar</h3>
+                  <ul className="mt-4 space-y-3 text-sm text-on-dark-muted">{selectedService.details.map((item) => <li key={item} className="border-l-2 border-red-400/50 pl-3">{item}</li>)}</ul>
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Documentos comunes</h4>
-                  <ul className="space-y-2 text-slate-400 text-xs">
-                    {selectedService.commonDocuments.map((doc, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5"></div>
-                        <span>{doc}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <h3 className="font-bold text-white">Documentos comunes</h3>
+                  <ul className="mt-4 space-y-3 text-sm text-on-dark-muted">{selectedService.commonDocuments.map((item) => <li key={item} className="border-l-2 border-blue-400/50 pl-3">{item}</li>)}</ul>
                 </div>
               </div>
-
-              <div className="flex justify-end">
-                <Link
-                  to="/contacto"
-                  onClick={() => setSelectedService(null)}
-                  className="px-6 py-3 bg-[#BE0000] text-white font-bold rounded-xl hover:bg-[#990000] transition-all inline-flex items-center text-sm"
-                >
-                  Consultar sobre este servicio
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Link>
-              </div>
+              <Link to={`/contacto?ruta=tramites&tema=${selectedService.slug}`} onClick={() => setSelectedService(null)} className="mt-9 inline-flex items-center rounded-xl bg-[#BE0000] px-6 py-4 font-bold text-white hover:bg-[#990000]">
+                Consultar este trámite <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </motion.div>
           </div>
         )}

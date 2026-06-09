@@ -24,20 +24,20 @@ export function PremiumPageHero({ eyebrow, title, description, intent = 'general
   };
 
   return (
-    <section className="relative z-20 max-w-5xl mx-auto pt-36 pb-16 px-6 text-center">
+    <section className="relative z-20 max-w-5xl mx-auto pt-36 pb-20 px-4 md:px-6 text-center">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="space-y-6"
+        className="hero-light-panel space-y-6 rounded-[2rem] px-6 py-8 md:px-10 md:py-12"
       >
-        <div className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase border bg-gradient-to-r text-blue-900 ${getIntentColors()}`}>
+        <div className={`inline-block px-4 py-2 rounded-full text-sm font-bold tracking-wider uppercase border bg-gradient-to-r text-blue-950 ${getIntentColors()}`}>
           {eyebrow}
         </div>
-        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-950 leading-tight [text-shadow:_0_2px_20px_rgba(255,255,255,0.8)]">
+        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-on-light leading-tight">
           {title}
         </h1>
-        <p className="text-lg md:text-xl text-slate-800 max-w-3xl mx-auto leading-relaxed font-semibold">
+        <p className="text-base md:text-xl text-on-light-muted max-w-3xl mx-auto leading-relaxed font-semibold">
           {description}
         </p>
       </motion.div>

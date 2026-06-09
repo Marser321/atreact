@@ -1,14 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 
-// Import Pages
-import { Home } from './pages/Home';
-import { Servicios } from './pages/Servicios';
-import { Cursos } from './pages/Cursos';
-import { Nosotros } from './pages/Nosotros';
-import { Contacto } from './pages/Contacto';
 import { siteSettings } from './data/seed';
+
+const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
+const Emprender = lazy(() => import('./pages/Emprender').then((module) => ({ default: module.Emprender })));
+const Servicios = lazy(() => import('./pages/Servicios').then((module) => ({ default: module.Servicios })));
+const Cursos = lazy(() => import('./pages/Cursos').then((module) => ({ default: module.Cursos })));
+const Nosotros = lazy(() => import('./pages/Nosotros').then((module) => ({ default: module.Nosotros })));
+const Contacto = lazy(() => import('./pages/Contacto').then((module) => ({ default: module.Contacto })));
 
 const CeoLogo = ({ className = "h-10" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 735 220" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,10 +26,10 @@ function ScrollToTop() {
 
   useEffect(() => {
     if (hash) {
-      window.setTimeout(() => {
+      const timeoutId = window.setTimeout(() => {
         document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 0);
-      return;
+      return () => window.clearTimeout(timeoutId);
     }
     window.scrollTo(0, 0);
   }, [pathname, hash]);
@@ -45,22 +46,22 @@ function Layout() {
   const location = useLocation();
   const navItems = [
     {
-      label: 'Quiero emprender',
-      to: '/#programa',
-      active: location.pathname === '/' && location.hash === '#programa',
+      label: 'Emprender',
+      to: '/emprender',
+      active: location.pathname === '/emprender',
     },
     {
-      label: 'Necesito un trámite',
-      to: '/servicios',
-      active: location.pathname === '/servicios',
+      label: 'Trámites',
+      to: '/tramites',
+      active: location.pathname === '/tramites' || location.pathname === '/servicios',
     },
     {
-      label: 'Aprender gratis',
-      to: '/#aprende-gratis',
-      active: location.pathname === '/' && location.hash === '#aprende-gratis',
+      label: 'Aprender',
+      to: '/aprender',
+      active: location.pathname === '/aprender' || location.pathname === '/cursos',
     },
     {
-      label: 'Confianza y límites',
+      label: 'Nosotros',
       to: '/nosotros',
       active: location.pathname === '/nosotros',
     },
@@ -123,27 +124,27 @@ function Layout() {
 
 
       {/* BACKGROUND FLOATING EFFECTS */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      <div className="fixed inset-0 z-0 pointer-events-none" aria-hidden="true">
         {/* Animated Orbs */}
         <div
           className="absolute top-[20%] left-[10%] mix-blend-screen will-change-transform"
           style={{ transform: 'translate3d(0, var(--orb-y-1, 0px), 0)' }}
         >
-          <div className="w-[40vw] h-[40vw] bg-[#00246B]/40 blur-[130px] rounded-full animate-[pulse_10s_infinite_alternate]" />
+          <div className="w-[36vw] h-[36vw] bg-[#00246B]/30 blur-[100px] rounded-full" />
         </div>
 
         <div
           className="absolute bottom-[20%] right-[5%] will-change-transform"
           style={{ transform: 'translate3d(0, var(--orb-y-2, 0px), 0)' }}
         >
-          <div className="w-[50vw] h-[50vw] bg-[#0B0121]/80 blur-[150px] rounded-full" />
+          <div className="w-[44vw] h-[44vw] bg-[#0B0121]/70 blur-[110px] rounded-full" />
         </div>
 
         <div
           className="absolute top-[40%] right-[20%] mix-blend-screen will-change-transform"
           style={{ transform: 'translate3d(0, var(--orb-y-3, 0px), 0)' }}
         >
-          <div className="w-[30vw] h-[30vw] bg-[#BE0000]/15 blur-[120px] rounded-full" />
+          <div className="w-[28vw] h-[28vw] bg-[#BE0000]/12 blur-[90px] rounded-full" />
         </div>
 
         {/* Micro Noise Overlay */}
@@ -152,38 +153,28 @@ function Layout() {
 
       {/* HEADER CLOUD PARALLAX */}
       <div
-        className="absolute top-0 inset-x-0 h-[68vh] min-h-[560px] max-h-[760px] pointer-events-none z-10 overflow-hidden"
-        style={{ WebkitMaskImage: 'linear-gradient(to bottom, black 58%, transparent 100%)', maskImage: 'linear-gradient(to bottom, black 58%, transparent 100%)' }}
+        className="absolute top-0 inset-x-0 h-[760px] md:h-[720px] pointer-events-none z-10 overflow-hidden"
+        aria-hidden="true"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#ffffff] via-[#e2ecfa] to-[#c7daf4]/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-[#e8f2ff] to-[#b8ccea]"></div>
 
         <div
           className="absolute inset-x-0 top-0 h-full pointer-events-none z-10 will-change-transform"
           style={{ transform: 'translate3d(0, var(--clouds-y, 0px), 0)' }}
         >
-          {/* Volumetric Clouds Background Layer */}
-          <div
-            className="absolute top-[-5%] left-[-5%] w-[110%] h-[110%] bg-cover bg-center bg-no-repeat opacity-[0.35] mix-blend-color-burn"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1534088568595-a066f410cbda?q=80&w=2500&auto=format&fit=crop')" }}
-          ></div>
-
-          {/* Foreground Clouds */}
-          <div
-            className="absolute top-0 left-0 w-full h-full bg-cover bg-bottom bg-no-repeat opacity-[0.55] mix-blend-overlay"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1501630834273-4b5604d2ee31?q=80&w=2500&auto=format&fit=crop')" }}
-          ></div>
-
-          {/* Central Brightness Backing */}
-          <div className="absolute top-[8%] left-1/2 -translate-x-1/2 w-[70%] h-[420px] bg-white/85 blur-[100px]"></div>
+          <div className="absolute -top-24 -left-20 h-[420px] w-[55vw] rounded-full bg-white/80 blur-[70px]"></div>
+          <div className="absolute top-12 right-[-12vw] h-[420px] w-[58vw] rounded-full bg-white/70 blur-[75px]"></div>
+          <div className="absolute top-[32%] left-[12%] h-[260px] w-[76vw] rounded-[50%] bg-white/48 blur-[62px]"></div>
+          <div className="absolute inset-0 opacity-45 bg-[radial-gradient(circle_at_25%_22%,white_0,transparent_30%),radial-gradient(circle_at_78%_30%,white_0,transparent_34%),radial-gradient(circle_at_50%_55%,#dbeafe_0,transparent_38%)]"></div>
         </div>
-        <div className="absolute inset-x-0 bottom-0 h-[42%] bg-gradient-to-b from-transparent via-[#050B14]/75 to-[#050B14]"></div>
+        <div className="absolute inset-x-0 bottom-0 h-[34%] bg-gradient-to-b from-transparent via-[#050B14]/75 to-[#050B14]"></div>
       </div>
 
       {/* NAVBAR */}
       <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? 'py-3 bg-[#050B14]/88 backdrop-blur-md border-b border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.25)]' : 'py-4 md:py-5 bg-white/68 backdrop-blur-xl border-b border-white/65 shadow-[0_10px_30px_rgba(15,23,42,0.08)]'}`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between gap-4">
-            <Link to="/" className={`rounded-xl border border-white/70 bg-white/85 px-2 py-1 shadow-sm transition-all duration-300 ${scrolled ? 'scale-90' : 'scale-100'}`}>
+            <Link to="/" aria-label="America Tramites, inicio" className={`rounded-xl border border-white/70 bg-white/90 px-2 py-1 shadow-sm transition-all duration-300 ${scrolled ? 'scale-90' : 'scale-100'}`}>
               <CeoLogo className="h-10 md:h-12 w-auto" />
             </Link>
 
@@ -192,6 +183,7 @@ function Layout() {
                 <Link
                   key={item.label}
                   to={item.to}
+                  aria-current={item.active ? 'page' : undefined}
                   className={`transition-colors ${scrolled ? 'hover:text-white' : 'hover:text-slate-950'} ${item.active ? `${scrolled ? 'text-white' : 'text-slate-950'} border-b-2 border-red-500 pb-1` : ''}`}
                 >
                   {item.label}
@@ -201,7 +193,7 @@ function Layout() {
 
             <Link
               to="/#quiz"
-              className="px-5 md:px-6 py-2.5 bg-[#BE0000] text-white rounded-full font-bold shadow-[0_4px_14px_rgba(190,0,0,0.4)] hover:shadow-[0_6px_20px_rgba(190,0,0,0.6)] hover:bg-[#990000] transition-all text-[11px] md:text-xs uppercase whitespace-nowrap"
+              className="px-5 md:px-6 py-2.5 bg-[#BE0000] text-white rounded-full font-bold shadow-[0_4px_14px_rgba(190,0,0,0.4)] hover:shadow-[0_6px_20px_rgba(190,0,0,0.6)] hover:bg-[#990000] transition-all text-xs uppercase whitespace-nowrap"
             >
               Descubre tu ruta
             </Link>
@@ -212,6 +204,7 @@ function Layout() {
               <Link
                 key={item.label}
                 to={item.to}
+                aria-current={item.active ? 'page' : undefined}
                 className={`shrink-0 rounded-full border px-3 py-2 transition-colors ${item.active ? `${scrolled ? 'border-red-500 bg-red-500/15 text-white' : 'border-red-600 bg-red-50 text-red-800'}` : `${scrolled ? 'border-white/10 bg-white/5 hover:bg-white/10 hover:text-white' : 'border-slate-300/80 bg-white/70 hover:bg-white text-slate-700 hover:text-slate-950'}`}`}
               >
                 {item.label}
@@ -223,15 +216,20 @@ function Layout() {
 
       {/* RENDER PAGES WITH TRANSITION */}
       <main className="flex-grow">
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<Home />} />
-            <Route path="/servicios" element={<Servicios />} />
-            <Route path="/cursos" element={<Cursos />} />
-            <Route path="/nosotros" element={<Nosotros />} />
-            <Route path="/contacto" element={<Contacto />} />
-          </Routes>
-        </AnimatePresence>
+        <Suspense fallback={<div className="relative z-20 min-h-[70vh]" aria-label="Cargando contenido" />}>
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<Home />} />
+              <Route path="/emprender" element={<Emprender />} />
+              <Route path="/tramites" element={<Servicios />} />
+              <Route path="/aprender" element={<Cursos />} />
+              <Route path="/nosotros" element={<Nosotros />} />
+              <Route path="/contacto" element={<Contacto />} />
+              <Route path="/servicios" element={<Navigate to="/tramites" replace />} />
+              <Route path="/cursos" element={<Navigate to="/aprender" replace />} />
+            </Routes>
+          </AnimatePresence>
+        </Suspense>
       </main>
 
       {/* FOOTER */}
@@ -240,11 +238,11 @@ function Layout() {
           <div className="inline-flex bg-white/5 border border-white/10 px-5 py-3 rounded-xl items-center justify-center">
             <CeoLogo className="h-8 md:h-10 w-auto brightness-200 grayscale opacity-70" />
           </div>
-          <p className="text-xs text-slate-500 leading-relaxed text-justify md:text-center">
+          <p className="text-sm text-on-dark-subtle leading-relaxed text-left md:text-center">
             Aviso Legal: {siteSettings.legalDisclaimer}
           </p>
           <div className="w-1/2 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mx-auto"></div>
-          <p className="text-xs text-slate-600 font-semibold tracking-wider uppercase">
+          <p className="text-xs text-on-dark-subtle font-semibold tracking-wider uppercase">
             © {new Date().getFullYear()} CEO América Trámites. Todos los derechos reservados.
           </p>
         </div>

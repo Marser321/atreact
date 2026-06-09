@@ -1,6 +1,7 @@
 export type Service = {
   title: string;
   slug: string;
+  category: 'migratorios' | 'renovaciones' | 'negocios';
   summary: string;
   details: string[];
   commonDocuments: string[];
@@ -38,6 +39,7 @@ export const services: Service[] = [
   {
     title: "Asilo político",
     slug: "asilo-politico",
+    category: "migratorios",
     summary: "Organice evidencias, copias y datos administrativos en un orden claro antes de revisar el siguiente paso por el canal correcto.",
     details: ["Orden de evidencias por fecha, tema y tipo de documento", "Preparación administrativa de formularios indicados por el solicitante", "Identificación de señales que pueden requerir revisión legal autorizada"],
     commonDocuments: ["Identificación vigente o disponible", "Evidencias de soporte organizadas por categoría", "Historial de entradas, salidas y fechas importantes"],
@@ -47,6 +49,7 @@ export const services: Service[] = [
   {
     title: "TPS",
     slug: "tps",
+    category: "renovaciones",
     summary: "Prepare solicitudes o renovaciones de TPS con una lista clara de documentos, fechas y soportes administrativos.",
     details: ["Checklist administrativo según el tipo de trámite", "Preparación de formularios indicados por el solicitante", "Orden de copias, pruebas de identidad, nacionalidad y residencia"],
     commonDocuments: ["Prueba de identidad", "Prueba de nacionalidad", "Prueba de residencia continua o presencia física"],
@@ -56,6 +59,7 @@ export const services: Service[] = [
   {
     title: "Permisos de trabajo",
     slug: "permisos-de-trabajo",
+    category: "renovaciones",
     summary: "Reúna y ordene documentos para una autorización de empleo o renovación con menos confusión y mayor control del paquete.",
     details: ["Organización de formularios y soportes administrativos", "Revisión de campos básicos antes de cerrar el paquete", "Preparación de copias para conservar respaldo personal"],
     commonDocuments: ["Documento de identidad", "Evidencia administrativa de elegibilidad", "Permiso anterior o recibos relacionados si aplica"],
@@ -65,6 +69,7 @@ export const services: Service[] = [
   {
     title: "Creación de compañías",
     slug: "creacion-de-companias",
+    category: "negocios",
     summary: "Ordene datos, responsables y documentos base para dar el primer paso administrativo en la formalización de su negocio.",
     details: ["Organización de datos de la compañía y responsables", "Preparación administrativa para registro inicial", "Checklist de próximos pasos, documentos y obligaciones básicas"],
     commonDocuments: ["Nombre de la compañía", "Dirección comercial o postal", "Datos de miembros, responsables o administradores"],
