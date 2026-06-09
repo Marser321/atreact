@@ -79,6 +79,38 @@
   </validation_plan>
 </vibe_coding_protocol_execution>
 
+# Implementation Plan: Fallback SPA en Vercel
+
+<vibe_coding_protocol_execution>
+  <phase name="planificar">
+    <objective>
+      Garantizar que las rutas canonicas de React Router carguen directamente
+      y al recargar la pagina en produccion.
+    </objective>
+    <business_benefit>
+      Permitir compartir enlaces de Emprender, Tramites, Aprender, Nosotros y
+      Contacto sin errores 404 en Vercel.
+    </business_benefit>
+  </phase>
+
+  <approved_direction>
+    <approval>
+      El usuario solicito actualizar el repositorio para visualizar los cambios
+      en Vercel; corregir las rutas directas es necesario para completar esa solicitud.
+    </approval>
+  </approved_direction>
+
+  <implementation_guardrails>
+    <routing>
+      Agregar unicamente el fallback SPA de Vercel hacia index.html, preservando
+      assets estaticos y el enrutamiento del cliente.
+    </routing>
+    <security>
+      No agregar secretos, tokens ni credenciales.
+    </security>
+  </implementation_guardrails>
+</vibe_coding_protocol_execution>
+
 # Implementation Plan: Heroes Editoriales Coherentes
 
 <vibe_coding_protocol_execution>
